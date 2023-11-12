@@ -1,0 +1,57 @@
+<div class="w-full h-full min-h-screen flex flex-col justify-center items-center py-10">
+    <div class="flex flex-col space-y-2 min-w-[990px] max-w-full">
+        <div class="flex flex-row space-x-2 w-full">
+            <form class="flex flex-col space-y-2 w-full">
+                <div class="relative bg-animated-gradient-green p-[2px]">
+                    <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Text For Encryption</label>
+                    <textarea type="text" name="login" rows="12" [(ngModel)]="encryptRequest.plainText" class="px-4 py-2 outline-0 w-full h-full"></textarea>
+                </div>
+                <div class="relative bg-animated-gradient-green p-[2px]">
+                    <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Keyword</label>
+                    <input type="text" name="password" [(ngModel)]="encryptRequest.key" class="px-4 py-2 outline-0 w-full">
+                </div>
+                <button (click)="encrypt()" class="btn-gradient-danger">
+                    Encrypt
+                </button>
+            </form>
+            <form class="flex flex-col space-y-2 w-full">
+                <div class="relative bg-animated-gradient-green p-[2px]">
+                    <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Text For Decryption</label>
+                    <textarea type="text" name="login" rows="12" [(ngModel)]="decryptRequest.cipheredText" class="px-4 py-2 outline-0 w-full h-full"></textarea>
+                </div>
+                <div class="relative bg-animated-gradient-green p-[2px]">
+                    <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Keyword</label>
+                    <input type="text" name="password" [(ngModel)]="decryptRequest.key" class="px-4 py-2 outline-0 w-full">
+                </div>
+                <button (click)="decrypt()" class="btn-gradient-danger">
+                    Decrypt
+                </button>
+            </form>
+        </div>
+
+        <div class="relative overflow-x-auto self-center" *ngIf="entropies.length > 0">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3" >
+                        Round
+                    </th>
+                    <th scope="col" class="px-6 py-3" >
+                        Entropy
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" *ngFor="let value of entropies">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white" >
+                        {{value[0]}}
+                    </th>
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white" >
+                        {{value[1]}}
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

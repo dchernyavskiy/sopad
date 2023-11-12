@@ -1,0 +1,41 @@
+<div class="w-full h-full min-h-screen flex flex-col justify-center items-center py-10">
+  <div class="flex flex-col space-y-2 min-w-[500px] max-w-full">
+    <form class="flex flex-col gap-2 w-full" #form="ngForm">
+      <div class="relative w-full bg-animated-gradient-green p-[2px]">
+        <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Your Name</label>
+        <input [(ngModel)]="newMessage.name" required type="text" name="name" #name="ngModel" class="px-4 py-2 outline-0 w-full">
+      </div>
+      <div class="relative bg-animated-gradient-green p-[2px]">
+        <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Chat</label>
+        <div
+          class="flex flex-col gap-4 overflow-y-scroll px-4 py-2 outline-0 bg-white w-full h-full min-h-[450px] max-h-[450px]">
+          <ng-container *ngFor="let message of messages">
+            <div class="flex flex-row-reverse" *ngIf="message.isMine">
+              <div class="bg-blue-200 w-fit px-4 py-2 font-semibold">
+                {{message.text}}
+              </div>
+            </div>
+            <div class="relative flex flex-row" *ngIf="!message.isMine">
+              <label class="text-xs absolute -top-2 left-2 bg-white font-bold">{{message.name}}</label>
+              <div class="bg-slate-200 w-fit px-4 py-2 font-semibold">
+                {{message.text}}
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div class="flex flex-row gap-2 w-full">
+        <div class="relative w-full bg-animated-gradient-green p-[2px]">
+          <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Message</label>
+          <input type="text" required [(ngModel)]="newMessage.text" name="text" #text="ngModel" class="px-4 py-2 outline-0 w-full">
+        </div>
+        <button class="btn-gradient-danger"
+                [disabled]="form.invalid"
+                [ngClass]="{'bg-slate-500':form.invalid}"
+                (click)="send()">
+          Send
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+{
+  "name": "lb2",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "ng-openapi-gen": "ng-openapi-gen",
+    "generate.lab1": "ng-openapi-gen --input http://localhost:5000/swagger/v1/swagger.json -o src/app/api/lab1 --module Lab1ApiModule --skipJsonSuffix true --removeStaleFiles false",
+    "generate.lab2": "ng-openapi-gen --input http://localhost:5002/swagger/v1/swagger.json -o src/app/api/lab2 --module Lab2ApiModule --skipJsonSuffix true --removeStaleFiles false",
+    "generate": "npm run generate.lab1 && npm run generate.lab2"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^15.0.0",
+    "@angular/common": "^15.0.0",
+    "@angular/compiler": "^15.0.0",
+    "@angular/core": "^15.0.0",
+    "@angular/forms": "^15.0.0",
+    "@angular/platform-browser": "^15.0.0",
+    "@angular/platform-browser-dynamic": "^15.0.0",
+    "@angular/router": "^15.0.0",
+    "@microsoft/signalr": "^7.0.12",
+    "@types/secure-random": "^1.1.3",
+    "node-forge": "^1.3.1",
+    "rxjs": "~7.5.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.12.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^15.0.2",
+    "@angular/cli": "~15.0.2",
+    "@angular/compiler-cli": "^15.0.0",
+    "@types/jasmine": "~4.3.0",
+    "@types/node-forge": "^1.3.7",
+    "autoprefixer": "^10.4.16",
+    "jasmine-core": "~4.5.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.1.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.0.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.3",
+    "typescript": "~4.8.2"
+  }
+}

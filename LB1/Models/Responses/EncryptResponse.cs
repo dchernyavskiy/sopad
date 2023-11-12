@@ -1,3 +1,3 @@
 ﻿namespace LB1.Models.Responses;
 
-public record EncryptResponse(string EncryptedText);
+public record EncryptResponse(byte[] EncryptedText, IDictionary<int, double> Entropies);

@@ -1,0 +1,18 @@
+<div class="w-full h-full min-h-screen flex flex-col justify-center items-center py-10">
+  <div class="flex flex-col space-y-2 min-w-[500px] max-w-full">
+    <form class="flex flex-col gap-2 w-full" #form="ngForm">
+      <div class="relative w-full bg-animated-gradient-green p-[2px]">
+        <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Your Name</label>
+        <input required type="text" name="name" class="px-4 py-2 outline-0 w-full">
+      </div>
+      <div class="flex flex-row gap-2 w-full">
+        <button class="btn-gradient-danger w-full"
+                [disabled]="form.invalid"
+                [ngClass]="{'bg-slate-500':form.invalid}"
+        >
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

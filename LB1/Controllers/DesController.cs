@@ -1,5 +1,6 @@
 ﻿using LB1.Models.Requests;
 using LB1.Models.Responses;
+using LB1.Services;
 using LB1.Services.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -10,13 +11,11 @@ namespace LB1.Controllers;
 [Route("api/[controller]")]
 public class DesController : ControllerBase
 {
-    private readonly IConversionService _conversionService;
-    private readonly IDataProcessor _dataProcessor;
+    private readonly IDesService _desService;
 
-    public DesController(IConversionService conversionService, IDataProcessor dataProcessor)
+    public DesController(IDesService desService)
     {
-        _conversionService = conversionService;
-        _dataProcessor = dataProcessor;
+        _desService = desService;
     }
 
     [HttpPost("/encrypt", Name = "Encrypt")]
@@ -29,10 +28,10 @@ public class DesController : ControllerBase
         {
             "Des"
         })]
-    public async Task<ActionResult<EncryptResponse>> Login([FromBody] EncryptRequest request)
+    public async Task<ActionResult<EncryptResponse>> Encrypt([FromBody] EncryptRequest request)
     {
-        var encryptedText = _conversionService.BinToHex(_dataProcessor.Encrypt(request.Key, request.PlainText));
-        return new EncryptResponse(encryptedText);
+        var encryptedText = _desService.Encrypt(request.PlainText, request.Key);
+        return new EncryptResponse(encryptedText, _desService.Entropies);
     }
 
     [HttpPost("/decrypt", Name = "Decrypt")]
@@ -45,11 +44,28 @@ public class DesController : ControllerBase
         {
             "Des"
         })]
-    public async Task<ActionResult<DecryptResponse>> Login([FromBody] DecryptRequest request)
+    public async Task<ActionResult<DecryptResponse>> Decrypt([FromBody] DecryptRequest request)
     {
-        var decryptedText =
-            _conversionService.BinToUTF(_dataProcessor.Decrypt(request.Key,
-                _conversionService.HexToBinary(request.CipheredText)));
-        return new DecryptResponse(decryptedText);
+        var decryptedText = _desService.Decrypt(request.CipheredText, request.Key);
+        return new DecryptResponse(decryptedText, _desService.Entropies);
+    }
+
+    [HttpGet("/stream", Name = "Stream")]
+    [ProducesResponseType(typeof(ICollection<int>), StatusCodes.Status200OK)]
+    [SwaggerOperation(
+        Summary = "Stream",
+        Description = "Stream",
+        OperationId = "Stream",
+        Tags = new[]
+        {
+            "Des"
+        })]
+    public async IAsyncEnumerable<int> Stream()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            await Task.Delay(1000);
+            yield return i;
+        }
     }
 }

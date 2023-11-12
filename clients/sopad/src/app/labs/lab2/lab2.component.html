@@ -1,0 +1,15 @@
+<div class="w-full h-full min-h-screen flex flex-col justify-center items-center">
+    <form class="flex flex-col space-y-2" >
+        <div class="relative bg-animated-gradient-green p-[2px]">
+            <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Login</label>
+            <input type="text" name="login" [(ngModel)]="login" class="px-4 py-2 outline-0">
+        </div>
+        <div class="relative bg-animated-gradient-green p-[2px]">
+            <label class="text-xs absolute -top-2 left-2 bg-white font-bold">Password</label>
+            <input type="password" name="password"  [(ngModel)]="password" class="px-4 py-2 outline-0">
+        </div>
+        <button (click)="submit()" class="btn-gradient-danger">
+            Submit
+        </button>
+    </form>
+</div>
