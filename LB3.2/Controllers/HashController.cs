@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Net.Mime;
+using System.Reflection.Metadata;
+using System.Text;
 using LB3.Models;
 using LB3.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -79,17 +81,27 @@ public class HashController : ControllerBase
         {
             "Hash"
         })]
-    public async Task<IActionResult> CollisionFile(IFormFile file, int bitSize)
+    public async Task<IActionResult> CollisionFile(IFormFile file, int bitSize = 2)
     {
         await using (var ms = new MemoryStream())
         {
             await file.OpenReadStream().CopyToAsync(ms);
+            var data = ms.ToArray();
+            byte[] collision = null;
             if (file.ContentType.Contains("image"))
             {
-                
+                collision = _hashService.CollisionInTheMiddle(ms.ToArray(), bitSize);
+            }
+            else if (file.ContentType.Contains("document"))
+            {
+                var doc = new Aspose.Words.Document(ms);
+                collision = _hashService.CollisionInWord(doc, bitSize);
+            }
+            else
+            {
+                collision = _hashService.Collision(ms.ToArray(), bitSize);
             }
 
-            var collision = _hashService.Collision(ms.ToArray(), bitSize);
             var newName = Path.GetFileNameWithoutExtension(file.FileName) + "-upd" + Path.GetExtension(file.FileName);
             return File(new MemoryStream(collision), file.ContentType, newName);
         }
