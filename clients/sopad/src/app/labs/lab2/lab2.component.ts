@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import * as forge from "node-forge";
-import {environment} from "../../../environments/environment";
+import {RsaService} from 'src/app/services/rsa.service';
 import {AuthService} from "../../api/lab2/services/auth.service";
 
 @Component({
@@ -12,20 +12,29 @@ export class Lab2Component {
   password: string = '';
   login: string = '';
 
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly authService: AuthService, private readonly rsaService: RsaService) {
   }
 
   submit() {
-    const publicKey = forge.pki.publicKeyFromPem(environment.PUBLIC_KEY);
-    const request = {
-      encryptedLogin: forge.util.encode64(publicKey.encrypt(this.login, 'RSA-OAEP')),
-      encryptedPassword: forge.util.encode64(publicKey.encrypt(this.password, 'RSA-OAEP'))
-    };
-    console.log(request)
-    this.authService.login({
-      body: request
-    }).subscribe(res => {
-      alert(`Your login: ${res.login}. Your password: ${res.password}`)
-    })
+    this.authService.getPublicKey()
+      .subscribe(res => {
+        this.rsaService.generateKeys();
+        const publicKey = forge.pki.publicKeyFromPem(res.publicKey!);
+        const privateKey = forge.pki.privateKeyFromPem(this.rsaService.privateKey);
+        console.log('private', this.rsaService.privateKey)
+        console.log('public', this.rsaService.publicKey)
+        const request = {
+          encryptedLogin: forge.util.encode64(publicKey.encrypt(this.login, 'RSAES-PKCS1-V1_5')),
+          encryptedPassword: forge.util.encode64(publicKey.encrypt(this.password, 'RSAES-PKCS1-V1_5')),
+          publicKey: this.rsaService.publicKey
+        };
+        this.authService.login({
+          body: request
+        }).subscribe(res => {
+          const decryptedLogin = privateKey.decrypt(forge.util.decode64(res.login!), 'RSAES-PKCS1-V1_5');
+          const decryptedPassword = privateKey.decrypt(forge.util.decode64(res.password!), 'RSAES-PKCS1-V1_5');
+          alert(`Your login: ${decryptedLogin}. Your password: ${decryptedPassword}`)
+        })
+      })
   }
 }

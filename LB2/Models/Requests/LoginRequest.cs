@@ -1,3 +1,3 @@
 ﻿namespace LB2.Models.Requests;
 
-public record LoginRequest(string EncryptedLogin, string EncryptedPassword);
+public record LoginRequest(string EncryptedLogin, string EncryptedPassword, string PublicKey);

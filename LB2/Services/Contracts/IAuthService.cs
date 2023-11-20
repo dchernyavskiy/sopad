@@ -4,5 +4,5 @@ namespace LB2.Services.Contracts;
 
 public interface IAuthService
 {
-    LoginResponse Login(string encryptedLogin, string encryptedPassword);
+    LoginResponse Login(string encryptedLogin, string encryptedPassword, string PublicKey);
 }

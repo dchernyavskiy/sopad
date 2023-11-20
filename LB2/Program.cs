@@ -12,7 +12,7 @@ builder.Services.AddOptions<RsaOptions>().BindConfiguration(nameof(RsaOptions));
 builder.Services.AddSingleton<RsaOptions>(sp =>
     sp.GetRequiredService<IOptions<RsaOptions>>().Value
 );
-builder.Services.AddSingleton<IRsaService, RsaService>();
+// builder.Services.AddSingleton<IRsaService, RsaService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
