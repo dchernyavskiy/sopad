@@ -8,6 +8,8 @@ public class DesService : IDesService
 {
     public IDictionary<int, double> Entropies { get; set; } = new Dictionary<int, double>();
 
+    
+    // initial permutation
     private readonly byte[] IP =
     {
         58, 50, 42, 34, 26, 18, 10, 2,
@@ -20,6 +22,7 @@ public class DesService : IDesService
         63, 55, 47, 39, 31, 23, 15, 7
     };
 
+    // кінцева перестановка
     private readonly byte[] FP =
     {
         40, 8, 48, 16, 56, 24, 64, 32,
@@ -31,7 +34,7 @@ public class DesService : IDesService
         34, 2, 42, 10, 50, 18, 58, 26,
         33, 1, 41, 9, 49, 17, 57, 25
     };
-
+    // перестановка бітів для знаходження розширеного ключа
     private readonly byte[] K1P =
     {
         57, 49, 41, 33, 25, 17, 9, 1,
@@ -48,6 +51,7 @@ public class DesService : IDesService
         28, 20, 12, 4
     };
 
+    // 48 біт ключа
     private readonly byte[] CP =
     {
         14, 17, 11, 24, 1, 5, 3, 28,
@@ -57,8 +61,8 @@ public class DesService : IDesService
         51, 45, 33, 48, 44, 49, 39, 56,
         34, 53, 46, 42, 50, 36, 29, 32
     };
-
-    private readonly byte[] EP =
+    // функція розширення
+    private readonly byte[] E =
     {
         32, 1, 2, 3, 4, 5, 4, 5,
         6, 7, 8, 9, 8, 9, 10, 11,
@@ -67,7 +71,7 @@ public class DesService : IDesService
         22, 23, 24, 25, 24, 25, 26, 27,
         28, 29, 28, 29, 30, 31, 32, 1
     };
-
+    // перестановка
     private readonly byte[] P =
     {
         16, 7, 20, 21, 29, 12, 28, 17,
@@ -75,7 +79,7 @@ public class DesService : IDesService
         2, 8, 24, 14, 32, 27, 3, 9,
         19, 13, 30, 6, 22, 11, 4, 25
     };
-
+    // перетворення
     private readonly byte[,,] SBox =
     {
         {
@@ -127,7 +131,7 @@ public class DesService : IDesService
             { 2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 }
         }
     };
-
+    // циклічні зсуви
     private readonly byte[] ShiftBits =
     {
         1, 1, 2, 2, 2, 2, 2, 2,
@@ -136,14 +140,14 @@ public class DesService : IDesService
 
     public byte[] Encrypt(string message, string key)
     {
-        var messageBytes = Encoding.Default.GetBytes(message);
+        var messageBytes = Encoding.UTF8.GetBytes(message);
         return Des(messageBytes, GetKeyBytes(key), true);
     }
 
     public string Decrypt(ReadOnlySpan<byte> encryptedMessage, string key)
     {
         var decryptedMessage = Des(encryptedMessage, GetKeyBytes(key), false);
-        return Encoding.Default.GetString(decryptedMessage);
+        return Encoding.UTF8.GetString(decryptedMessage.TakeWhile(x => x != 0).ToArray());
     }
 
     private byte[] EnlargeMessage(ReadOnlySpan<byte> originalMessage)
@@ -177,13 +181,11 @@ public class DesService : IDesService
 
         for (var i = 0; i < numOfParts; i++)
         {
-            var k = i;
-
-            var messagePart = messageBytes.AsSpan().Slice(k * 8, 8);
+            var messagePart = messageBytes.AsSpan().Slice(i * 8, 8);
             FeistelCypher(messagePart, subKeys, encrypt);
         }
 
-        return messageBytes.TakeWhile(x => x != 0).ToArray();
+        return messageBytes;
     }
 
     private BitArray[] CreateSubKeys(byte[] keyBytes)
@@ -194,6 +196,7 @@ public class DesService : IDesService
         var right = new bool[28];
         for (var i = 0; i < 28; i++)
         {
+            // заповнюємо ліву та праву частини розширеного ключа за допомогою допоміжних таблиць
             left[27 - i] = keyBits[64 - K1P[i]];
             right[27 - i] = keyBits[64 - K2P[i]];
         }
@@ -203,6 +206,7 @@ public class DesService : IDesService
 
         for (var i = 0; i < 16; i++)
         {
+            // обертаємо праву та ліву послідовності бітів
             left.Rotate(ShiftBits[i]);
             while (WeakKeys.Any(x => x == new BitArray(left)))
             {
@@ -215,13 +219,15 @@ public class DesService : IDesService
                 right.Rotate(ShiftBits[i]);
             }
 
+            // заповнюємо розширений ключ
             var subKey = new BitArray(48);
             for (var j = 0; j < 28; j++)
             {
                 temp[j] = right[j];
                 temp[j + 28] = left[j];
             }
-
+            
+            // заповнюємо 48 бітний ключ за допомогою допоміжної таблиці
             for (var j = 0; j < 48; j++)
             {
                 subKey[47 - j] = temp[56 - CP[j]];
@@ -250,21 +256,27 @@ public class DesService : IDesService
         var right = new BitArray(32);
         for (var i = 0; i < 32; i++)
         {
+            // початкова перестановка за допомогою таблиці
             left[31 - i] = messageBits[64 - IP[i]];
             right[31 - i] = messageBits[64 - IP[i + 32]];
         }
 
         var temp = new BitArray(32);
+        // 16 циклів перетворення Фейстеля 
         for (var i = 0; i < 16; i++)
         {
             for (var j = 0; j < 32; j++)
             {
                 temp[j] = right[j];
             }
-
+            
+            // якщо шифруємо то беремо і-й підключ інакше дзеркальний
             var subKey = encrypt ? subKeys[i] : subKeys[15 - i];
+            // виконуємо шифрування
             F(right, subKey);
+            // підраховуємо інтропію
             Entropies[i] = CountEntropy(right);
+            
             right = right.Xor(left);
 
             (left, temp) = (temp, left);
@@ -279,6 +291,7 @@ public class DesService : IDesService
 
         for (var i = 0; i < 64; i++)
         {
+            // записуємо значення до меседжу з урахуванням фінальної пермутації
             messageBits[63 - i] = leftRight[64 - FP[i]];
         }
 
@@ -305,7 +318,8 @@ public class DesService : IDesService
         var extended = new BitArray(48);
         for (var j = 0; j < 48; j++)
         {
-            extended[47 - j] = right[32 - EP[j]];
+            // заповнення розширеного ключа на основі функції розширення 
+            extended[47 - j] = right[32 - E[j]];
         }
 
         var result = extended.Xor(subKey);
@@ -315,7 +329,7 @@ public class DesService : IDesService
         for (var j = 0; j < 8; j++)
         {
             var pack = j * 6;
-
+            // знаходимо потрібний блок для перетворення
             byte row = 0;
             row |= Convert.ToByte(result[pack]);
             row |= (byte)(Convert.ToInt32(result[pack + 5]) << 1);
@@ -325,17 +339,18 @@ public class DesService : IDesService
             {
                 column |= (byte)(Convert.ToInt32(result[pack + k + 1]) << k);
             }
-
+            // вибираємо портрібен значення
             var value = SBox[7 - j, row, column];
-
             for (var k = 0; k < 4; k++)
             {
+                // записуємо значення з урахуванням ротації в право на k & 1 
                 newRight[j * 4 + k] = Convert.ToBoolean(value >> k & 1);
             }
         }
 
         for (var j = 0; j < 32; j++)
         {
+            // переписуємо стару праву частину ключа на нову з урахуванням перестановки
             right[31 - j] = newRight[32 - P[j]];
         }
     }
@@ -344,7 +359,7 @@ public class DesService : IDesService
     {
         const int keyLength = 8;
         var keyBytes = new byte[keyLength];
-        Encoding.Default.GetBytes(key).AsSpan()[..8].CopyTo(keyBytes);
+        Encoding.UTF8.GetBytes(key).AsSpan()[..8].CopyTo(keyBytes);
         return keyBytes;
     }
 }

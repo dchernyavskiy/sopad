@@ -28,6 +28,7 @@ export class Lab1Component {
     this.desService.decrypt({
       body: this.decryptRequest
     }).subscribe(res => {
+      console.log(res.decryptedText)
       this.encryptRequest = {
         plainText: res.decryptedText,
         key: this.decryptRequest.key
