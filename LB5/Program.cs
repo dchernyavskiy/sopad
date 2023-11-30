@@ -1,42 +1,32 @@
-using LB5.Models;
-using LB5.Services;
-using Serilog;
-using Serilog.Events;
+using Stripe;
 
-
-Log.Logger = new LoggerConfiguration().MinimumLevel
-    .Override("Microsoft", LogEventLevel.Verbose)
-    .Enrich.FromLogContext()
-    .WriteTo.Console(LogEventLevel.Verbose)
-    .CreateLogger();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddSignalR();
+builder.Services.AddControllersWithViews();
 
-builder.Services.AddScoped<IHashService, HashService>();
-
+var secret = builder.Configuration["Stripe:Secret"];
+StripeConfiguration.ApiKey = secret;
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
-app.UseCors(policy =>
-    policy
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .SetIsOriginAllowed(_ => true)
-        .AllowCredentials());
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
